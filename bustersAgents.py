@@ -159,25 +159,37 @@ class GreedyBustersAgent(BustersAgent):
         pacmanPosition = gameState.getPacmanPosition()
         legal = [a for a in gameState.getLegalPacmanActions()]
         livingGhosts = gameState.getLivingGhosts()
-        livingGhostPositionDistributions = \
+        livingGhostPositionDistributions = 
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
+
         "*** YOUR CODE HERE ***"
-        bestAction = None
-        bestActionDist = None
-        for dist in livingGhostPositionDistributions:
-            mostLikelyPos = None
-            mostLikelyProb = None
-            for pos, prob in dist.items():
-                if mostLikelyProb == None or prob > mostLikelyProb:
-                    mostLikelyPos = pos
-                    mostLikelyProb = prob
 
-            for action in legal:
-                newPos = Actions.getSuccessor(pacmanPosition, action)
-                d = self.distancer.getDistance(newPos, mostLikelyPos)
-                if bestAction == None or d < bestActionDist:
-                    bestAction = action
-                    bestActionDist = d
+        # Use these to keep track on the next action to return
+        nextAction = None
+        nextActionDist = None
 
-        return bestAction
+        # For each ghost that hasn't been captured
+        for (distr in livingGhostPositionDistributions):
+            possiblePos = None
+            possibleProb = None
+
+            # Retrieve the most likely position of that ghost
+            for (pos, prob in distr.items()):
+            	# If Probability of ghost being in that position is higher, update
+                if (possibleProb==None or prob>possibleProb):
+                    possiblePos = pos
+                    possibleProb = prob
+
+            # Then chooses an action that brings Pacman closer to the closest ghost
+            for (act in legal):
+            	# Find the position after the next action
+                successorPosition = Actions.getSuccessor(pacmanPosition, act)
+                # Calculate distance
+                nextDist = self.distancer.getDistance(successorPosition, possiblePos)
+                # If distance is less than distance on record, update
+                if (nextAction==None or nextDist<nextActionDist):
+                    nextAction = act
+                    nextActionDist = nextDist
+
+        return nextAction
